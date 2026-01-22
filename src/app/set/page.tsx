@@ -1,9 +1,9 @@
 "use client";
 import { authClient } from "@/lib/auth-client";
 import { useSearchParams } from "next/navigation";
-import React from "react";
+import React, { Suspense } from "react";
 
-export default function Set() {
+function SetPasswordForm() {
   const searchParams = useSearchParams();
 
   const email = searchParams.get("email");
@@ -49,5 +49,19 @@ export default function Set() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function Set() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <SetPasswordForm />
+    </Suspense>
   );
 }

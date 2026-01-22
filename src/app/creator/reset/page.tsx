@@ -2,9 +2,9 @@
 
 import { authClient } from "@/lib/auth-client";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 
-export default function Reset() {
+function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const searchParams = useSearchParams();
 
@@ -53,5 +53,19 @@ export default function Reset() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function Reset() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

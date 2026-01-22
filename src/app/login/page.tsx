@@ -17,45 +17,48 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      // If authClient supports redirect: false, include it so library doesn't automatically redirect
-      const result = await authClient.signIn.email(
-        {
-          email: credentials.email,
-          password: credentials.password,
-        },
-        {
-          // If supported by your library — prevents server-side redirect following inside fetch
-          onSuccess: (ctx) => {
-            const role = ctx?.data?.user?.role;
-            console.log("Login successful, role:", role);
+      console.log("Starting login with:", credentials.email);
 
-            // Force a full-page load so middleware runs and cookies apply correctly
-            if (role) {
-              // window.location.assign(`/${role}`);
-            } else {
-              // window.location.assign(`/`);
-            }
-          },
-          onError: (ctx) => {
-            setIsLoading(false);
-            if (ctx?.error?.status === 403) {
-              alert("Please verify your email address");
-            } else {
-              alert(ctx?.error?.message ?? "Login failed");
-            }
-          },
-        },
-      );
+      const result = await authClient.signIn.email({
+        email: credentials.email,
+        password: credentials.password,
+      });
 
-      // If the library returns a promise result rather than calling onSuccess, handle that too:
-      if (result && result.data?.user) {
-        const role = result.data.user.role;
-        // window.location.assign(`/${role ?? ""}`);
+      console.log("Full login result:", JSON.stringify(result, null, 2));
+
+      if (result.error) {
+        setIsLoading(false);
+        console.error("Login error:", result.error);
+        if (result.error.status === 403) {
+          alert("Please verify your email address");
+        } else {
+          alert(result.error.message ?? "Login failed");
+        }
+        return;
+      }
+
+      if (result.data?.user) {
+        const role = (result.data.user as any).role as string | undefined;
+        console.log("Login successful! User:", result.data.user);
+        console.log("User role:", role);
+        console.log("Redirecting to:", `/${role || ""}`);
+
+        // Force a hard reload to the role-specific page
+        const redirectUrl = `/${role || ""}`;
+        console.log("Final redirect URL:", redirectUrl);
+        window.location.replace(redirectUrl);
+      } else {
+        setIsLoading(false);
+        console.error("No user data in result:", result);
+        alert("Login failed - no user data returned");
       }
     } catch (error) {
       setIsLoading(false);
-      console.error("Login error:", error);
-      alert("An error occurred during login");
+      console.error("Login exception:", error);
+      alert(
+        "An error occurred during login: " +
+          (error instanceof Error ? error.message : String(error)),
+      );
     }
   };
   const LoginwithGoogle = async () => {
